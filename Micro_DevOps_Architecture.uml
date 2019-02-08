@@ -1,0 +1,194 @@
+' Empty one for next to be with number suffix
+@startuml
+@enduml
+' Client
+@startuml
+rectangle "Optional Client GitLab" as OptGitLab {
+  archimate #Technology "GitLab Server" as GitLabServer <<technology-device>>
+  archimate #Business "+1 Server License" as SLGitLabServer <<business-value>>
+  SLGitLabServer --> GitLabServer
+  archimate #Technology "App Project 1" as AppProject1 <<composition>>
+  archimate #Technology "App Project N" as AppProjectN <<composition>>
+  archimate #Technology "SaltStack CI Runner Project" as CIProject <<composition>>
+  archimate #Technology "SaltStack Project" as SaltProject <<composition>>
+  GitLabServer -- AppProject1
+  GitLabServer -- AppProjectN
+  GitLabServer -- SaltProject
+  GitLabServer -- CIProject
+}
+archimate #Technology "Optional Client SaltStack Server" as SaltStackServer <<technology-device>>
+archimate #Technology "Optional Client SaltStack CI Runner" as SaltStackCIRunner <<technology-device>>
+archimate #Business "+1 Server License" as SLSaltStackServer <<business-value>>
+archimate #Business "+1 Server License" as SLSaltStackCIRunner <<business-value>>
+SLSaltStackServer -left-> SaltStackServer
+SLSaltStackCIRunner -up-> SaltStackCIRunner
+
+interface "SaltStack Servers" as SomeSaltStackServers
+interface "SaltStack CI Runners" as SomeCIRuners
+CIProject ...> SomeCIRuners : Server Config Pipeline
+CIProject <... SomeCIRuners : Job Reports
+SomeCIRuners ----> SomeSaltStackServers : SSH
+
+archimate #Application "Typical Client Servers" as TypicalServers <<application-service>>
+archimate #Technology "Client Dedicated Server" as Server <<technology-device>>
+archimate #Technology "Client VPS" as ServerVPS <<technology-device>>
+archimate #Technology "Client LXD/KVM Server" as ServerVH <<technology-device>>
+archimate #Technology "Client LXC Container" as ServerLXC <<technology-device>>
+archimate #Technology "Client KVM VM Linux" as ServerKVMLinux <<technology-device>>
+archimate #Technology "Client KVM VM Windows" as ServerKVMWindows <<technology-device>>
+archimate #Technology "Client Kubernetes Cluster" as ServerK8S <<technology-device>>
+archimate #Technology "Nodes" as ServerK8SNodes <<technology-device>>
+archimate #Business "+1 Server License" as SLServer <<business-value>>
+archimate #Business "+1 Server License" as SLServerVPS <<business-value>>
+archimate #Business "+1 Server License" as SLServerVH <<business-value>>
+archimate #Business "+1 Server License" as SLServerLXC <<business-value>>
+archimate #Business "+1 Server License" as SLServerKVMLinux <<business-value>>
+archimate #Business "+1 Server License" as SLServerKVMWindows <<business-value>>
+archimate #Business "+1 Server License for each Node" as SLServerK8SNodes <<business-value>>
+SLServer -up-> Server
+SLServerVPS -up-> ServerVPS
+SLServerVH -down-> ServerVH
+SLServerLXC -up-> ServerLXC
+SLServerKVMLinux -up-> ServerKVMLinux
+SLServerKVMWindows -up-> ServerKVMWindows
+SLServerK8SNodes -up-> ServerK8SNodes
+ServerVH -down---> ServerLXC
+ServerVH -down---> ServerKVMLinux
+ServerVH -down---> ServerKVMWindows
+SomeSaltStackServers --> TypicalServers : Salt Minion
+TypicalServers -- Server
+TypicalServers -- ServerVPS
+TypicalServers -- ServerVH
+TypicalServers -- ServerK8S
+ServerK8S -- ServerK8SNodes
+
+SaltProject ....> SomeSaltStackServers : Git Submodule
+
+archimate #Business "Engineers" as Engineers <<business-actor>>
+CIProject ..> Engineers : Report Analytics
+Engineers ..> SaltProject : Code Push
+
+interface "App Deployment" as AppDeployment1
+interface "App Deployment" as AppDeployment2
+AppProject1 ..> AppDeployment1
+AppProjectN ..> AppDeployment2
+
+SaltStackServer -left-( SomeSaltStackServers
+SaltStackCIRunner -left-( SomeCIRuners
+
+@enduml
+' Micro DevOps
+@startuml
+archimate #Technology "Accounting Server" as AccountingServer <<technology-device>>
+archimate #Technology "Accounting DB" as AccountingDB <<role>>
+archimate #Technology "WebSite" as WebSite <<technology-device>>
+AccountingServer -up-> WebSite : "WooCommerce API"
+AccountingServer - AccountingDB 
+
+archimate #Business "Client" as Client1 <<business-actor>>
+Client1 -right-> WebSite : Payment
+WebSite -left-> Client1 : Invoice
+
+archimate #Technology "GitLab Server" as GitLabServer <<technology-device>>
+archimate #Technology "GitLab DB" as GitLabDB <<role>>
+
+archimate #Application "Optional Client Project Group" as ProjectGroup <<application-service>>
+archimate #Technology "App Project N" as AppProjectN <<composition>>
+archimate #Technology "App Project 1" as AppProject1 <<composition>>
+ProjectGroup -right- GitLabServer
+ProjectGroup -- AppProjectN
+ProjectGroup -- AppProject1
+
+archimate #Application "Admin Group" as AdminGroup <<application-service>>
+archimate #Technology "Client SaltStack Project" as SaltProject <<composition>>
+archimate #Technology "Client Issues Project" as IssuesProject <<composition>>
+archimate #Technology "Client SaltStack\nCI Runner Project" as CIProject <<composition>>
+GitLabServer -down- AdminGroup
+AdminGroup --- SaltProject
+AdminGroup --- IssuesProject
+AdminGroup --- CIProject
+
+AccountingDB -down- GitLabDB : PostgreSQL\nDBLink
+GitLabServer -up- AccountingServer : GitLab API
+GitLabServer -right- GitLabDB
+
+interface "App Deployment" as AppDeployment1
+interface "App Deployment" as AppDeployment2
+AppProject1 ..> AppDeployment1
+AppProjectN ..> AppDeployment2
+
+archimate #Technology "Micro DevOps\nSaltStack Servers" as MDSSaltStackServers <<technology-device>>
+archimate #Technology "Client\nSaltStack Servers" as ClSaltStackServers <<technology-device>>
+archimate #Technology "Micro DevOps\nSaltStack CI Runners" as MDSSaltStackCIRunners <<technology-device>>
+archimate #Technology "Client\nSaltStack CI Runners" as ClSaltStackCIRunners <<technology-device>>
+
+AccountingServer ...> IssuesProject : Reports,\nServer Labels
+AccountingServer <... IssuesProject : Time Logs,\nIssues
+
+interface "SaltStack Servers" as SomeSaltStackServers
+interface "SaltStack CI Runners" as SomeCIRuners
+CIProject ---> SomeCIRuners : Server Config Pipeline
+CIProject <--- SomeCIRuners : Job Reports
+SomeCIRuners --> SomeSaltStackServers : SSH
+
+MDSSaltStackCIRunners -left-( SomeCIRuners
+ClSaltStackCIRunners -right-( SomeCIRuners
+
+MDSSaltStackServers -left-( SomeSaltStackServers
+ClSaltStackServers -right-( SomeSaltStackServers
+
+archimate #Business "Engineers" as Engineers1 <<business-actor>>
+CIProject -left-> Engineers1 : Report Analytics
+
+interface "Client GitLab SaltStack Project" as ClSaltProject
+SaltProject ...> MDSSaltStackServers : Git Submodule
+ClSaltProject ...> MDSSaltStackServers : Git Submodule
+
+archimate #Technology "Client Server 1" as Server1 <<technology-device>>
+archimate #Technology "Client Server N" as ServerN <<technology-device>>
+archimate #Application "Micro DevOps Servers" as MDSServers <<application-service>>
+interface "Accounting Server" as MiniAccountingServer
+interface "GitLab Server" as MiniGitLabServer
+
+SomeSaltStackServers -->  Server1 : Salt Minion
+SomeSaltStackServers -->  ServerN : Salt Minion
+SomeSaltStackServers -->  MDSServers : Salt Minion
+
+MDSServers -- MiniAccountingServer
+MDSServers -- MiniGitLabServer
+
+archimate #Technology "Monitoring Servers:\nAlerta\nNetdata\nSensu" as MonServers <<technology-device>>
+interface "URL Monitoring" as URLMonitoring
+interface "Server Monitoring" as ServerMonitoring
+MDSServers -- MonServers
+MonServers --> URLMonitoring
+MonServers --> ServerMonitoring
+MonServers -up-> Server1
+MonServers -up-> ServerN
+
+archimate #Technology "Backup Servers" as BackupServers <<technology-device>>
+MDSServers -- BackupServers
+
+archimate #Business "Engineers" as Engineers2 <<business-actor>>
+MonServers -up-> Engineers2 : Notifications
+Engineers2 -down-> MonServers : Dashboards
+Engineers2 -left-> Server1 : Console
+Engineers2 -right-> ServerN : Console
+
+archimate #Business "Engineers" as Engineers3 <<business-actor>>
+archimate #Business "Client" as Client2 <<business-actor>>
+Engineers3 -left-> SaltProject : Code Push
+Engineers3 -up-> IssuesProject : Issue Responses,\nTime Logs
+Client2 -left-> IssuesProject : Issues
+
+archimate #Application "sysadmws-utils:\nbulk_log\ndisk_alert\nmysql_replica_checker\nnotify_devilry\nrsnapshot_backup" as Utils <<application-component>>
+archimate #Application "sysadmws-formula:\nphp-fpm_apps\npython_apps\npercona\nufw_simple\nrsnapshot_backup\n..." as Formula <<application-component>>
+archimate #Business "AWS Client Private Bucket:\nDeploy Artifacts\nSaltStack Files" as AWS <<business-meaning>>
+
+Utils -up-> Server1
+Formula --> SomeSaltStackServers
+AWS -down-> Server1
+
+archimate #Technology "VPN Servers" as VPNServers <<technology-device>>
+MDSServers -- VPNServers
+@enduml
